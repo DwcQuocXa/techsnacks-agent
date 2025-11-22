@@ -24,6 +24,7 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
         model=settings.gemini_model,
         temperature=0.3,
         max_output_tokens=500,
+        google_api_key=settings.gemini_api_key,
     )
     
     system_prompt = await get_topic_selector_prompt()

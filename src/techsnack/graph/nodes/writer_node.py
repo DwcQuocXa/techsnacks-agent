@@ -10,6 +10,7 @@ async def writer_node(state: TechSnackState) -> TechSnackState:
         model=settings.gemini_model,
         temperature=0.7,
         max_output_tokens=2048,
+        google_api_key=settings.gemini_api_key,
     )
     
     topic = state.selected_topic or state.user_topic
