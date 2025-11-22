@@ -26,17 +26,21 @@ with tab1:
             result = asyncio.run(graph.ainvoke(initial_state))
             
             st.success("✅ Article Generated!")
-            st.metric("Topic", result.selected_topic)
+            
+            selected_topic = result.get("selected_topic") if isinstance(result, dict) else result.selected_topic
+            article = result.get("article") if isinstance(result, dict) else result.article
+            
+            st.metric("Topic", selected_topic)
             st.markdown("### 📝 Article")
-            st.markdown(result.article)
+            st.markdown(article)
             
             filename = f"techsnack_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
             output_dir = Path(settings.output_dir)
             output_dir.mkdir(exist_ok=True)
             output_path = output_dir / filename
-            output_path.write_text(result.article)
+            output_path.write_text(article)
             
-            st.download_button("⬇️ Download", result.article, filename)
+            st.download_button("⬇️ Download", article, filename)
 
 with tab2:
     st.subheader("Generate from Custom Topic")
@@ -48,13 +52,15 @@ with tab2:
             result = asyncio.run(graph.ainvoke(initial_state))
             
             st.success("✅ Article Generated!")
-            st.markdown(result.article)
+            
+            article = result.get("article") if isinstance(result, dict) else result.article
+            st.markdown(article)
             
             filename = f"techsnack_custom_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
             output_dir = Path(settings.output_dir)
             output_dir.mkdir(exist_ok=True)
             output_path = output_dir / filename
-            output_path.write_text(result.article)
+            output_path.write_text(article)
             
-            st.download_button("⬇️ Download", result.article, filename)
+            st.download_button("⬇️ Download", article, filename)
 

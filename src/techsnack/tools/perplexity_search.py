@@ -1,4 +1,4 @@
-from langchain_community.chat_models import ChatPerplexity
+from langchain_perplexity import ChatPerplexity
 from langchain_core.messages import HumanMessage
 from src.techsnack.config import settings
 
@@ -9,9 +9,7 @@ async def perplexity_search(query: str) -> dict:
     chat = ChatPerplexity(
         model=settings.perplexity_model,
         temperature=0.3,
-        pplx_api_key=settings.perplexity_api_key,
-        return_citations=True,
-        return_related_questions=False
+        api_key=settings.perplexity_api_key,
     )
     
     try:
