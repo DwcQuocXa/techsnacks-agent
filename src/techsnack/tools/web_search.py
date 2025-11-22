@@ -20,6 +20,8 @@ async def tavily_search(query: str, max_results: int = 5, include_domains: list[
         if include_domains:
             search_params["include_domains"] = include_domains
         
+        logger.info(f"  📤 Tavily payload: query='{query[:100]}...' ({len(query)} chars), max_results={max_results}")
+        
         response = client.search(**search_params)
         
         return [
@@ -31,7 +33,7 @@ async def tavily_search(query: str, max_results: int = 5, include_domains: list[
             for result in response.get("results", [])
         ]
     except Exception as e:
-        logger.warning(f"Tavily search error: {e}")
+        logger.warning(f"  ✗ Tavily search error: {e}")
         return []
 
 async def unified_search(query: str, max_results: int = 5, include_domains: list[str] = None) -> dict:
@@ -39,8 +41,12 @@ async def unified_search(query: str, max_results: int = 5, include_domains: list
     Run both Perplexity (deep research) and Tavily (quick lookup) in parallel.
     """
     perplexity_task = perplexity_search(query)
+    
+    topic_for_tavily = query.split("**Topic:**")[-1].split("**")[0].strip() if "**Topic:**" in query else query[:100]
+    tavily_query = build_quick_lookup_query(topic_for_tavily)
+    
     tavily_task = tavily_search(
-        build_quick_lookup_query(query), 
+        tavily_query, 
         max_results, 
         include_domains
     )

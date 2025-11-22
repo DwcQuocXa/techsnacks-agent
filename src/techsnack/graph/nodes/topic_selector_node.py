@@ -26,6 +26,8 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
         for i, item in enumerate(state.raw_news[:20])
     ])
     
+
+    logger.info("News summary: %s", news_summary)    
     llm = ChatGoogleGenerativeAI(
         model=settings.gemini_model,
         temperature=0.3,

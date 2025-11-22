@@ -16,6 +16,10 @@ async def perplexity_search(query: str) -> dict:
     )
     
     try:
+        query_preview = query[:200] + "..." if len(query) > 200 else query
+        logger.info(f"  📤 Perplexity payload: model={settings.perplexity_model}, query_length={len(query)}")
+        logger.debug(f"  📤 Perplexity query: {query_preview}")
+        
         response = await chat.ainvoke([HumanMessage(content=query)])
         
         sources = []

@@ -89,6 +89,10 @@ def build_quick_lookup_query(topic: str) -> str:
     """
     Build quick verification query for Tavily.
     Fast, broad search for supplementary information.
+    Max 400 characters for Tavily API limit.
     """
-    return f"{topic} latest news updates developer guide tutorial"
+    query = f"{topic} latest news updates developer guide tutorial"
+    if len(query) > 400:
+        query = topic[:350] + " latest news developer guide"
+    return query[:400]
 

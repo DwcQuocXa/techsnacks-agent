@@ -1,7 +1,10 @@
 import aiohttp
+import logging
 from datetime import datetime
 from src.techsnack.models import NewsItem
 from src.techsnack.config import settings
+
+logger = logging.getLogger(__name__)
 
 async def fetch_newsapi(query: str, from_date: datetime) -> list[NewsItem]:
     url = "https://newsapi.org/v2/everything"
@@ -13,6 +16,8 @@ async def fetch_newsapi(query: str, from_date: datetime) -> list[NewsItem]:
         "pageSize": 30,
         "language": "en"
     }
+    
+    logger.info(f"  📤 NewsAPI payload: query='{query}', from={from_date.strftime('%Y-%m-%d')}, pageSize=30")
     
     try:
         async with aiohttp.ClientSession() as session:
@@ -30,8 +35,9 @@ async def fetch_newsapi(query: str, from_date: datetime) -> list[NewsItem]:
                         )
                         for article in articles if article.get("title")
                     ]
+                logger.warning(f"  ✗ NewsAPI error: HTTP {response.status}")
                 return []
     except Exception as e:
-        print(f"NewsAPI error: {e}")
+        logger.warning(f"  ✗ NewsAPI error: {e}")
         return []
 
