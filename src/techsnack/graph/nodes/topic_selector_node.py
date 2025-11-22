@@ -26,8 +26,6 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
         for i, item in enumerate(state.raw_news[:20])
     ])
     
-
-    logger.info("News summary: %s", news_summary)    
     llm = ChatGoogleGenerativeAI(
         model=settings.gemini_model,
         temperature=0.3,
@@ -36,6 +34,10 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
     )
     
     system_prompt = await get_topic_selector_prompt()
+    
+    prompt_length = len(system_prompt) + len(news_summary)
+    logger.info(f"  📤 Gemini payload: model={settings.gemini_model}, temp=0.3, prompt_length={prompt_length}")
+    logger.debug(f"  📤 Gemini prompt preview: {news_summary[:200]}...")
     
     response = await llm.ainvoke([
         {"role": "system", "content": system_prompt},
