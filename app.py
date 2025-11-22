@@ -6,6 +6,9 @@ from pathlib import Path
 from src.techsnack.graph.graph import create_techsnack_graph
 from src.techsnack.graph.state import TechSnackState
 from src.techsnack.config import settings
+from src.techsnack.logging_config import setup_logging
+
+setup_logging()
 
 st.set_page_config(page_title="TechSnack AI Generator", page_icon="📰")
 st.title("🇻🇳 TechSnack AI Generator")

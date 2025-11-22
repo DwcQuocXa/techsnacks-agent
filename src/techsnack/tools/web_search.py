@@ -3,6 +3,9 @@ from tavily import TavilyClient
 from src.techsnack.config import settings
 from .perplexity_search import perplexity_search
 from .query_builder import build_quick_lookup_query
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
 
 async def tavily_search(query: str, max_results: int = 5, include_domains: list[str] = None):
     client = TavilyClient(api_key=settings.tavily_api_key)
@@ -28,7 +31,7 @@ async def tavily_search(query: str, max_results: int = 5, include_domains: list[
             for result in response.get("results", [])
         ]
     except Exception as e:
-        print(f"Tavily search error: {e}")
+        logger.warning(f"Tavily search error: {e}")
         return []
 
 async def unified_search(query: str, max_results: int = 5, include_domains: list[str] = None) -> dict:
@@ -54,6 +57,7 @@ async def unified_search(query: str, max_results: int = 5, include_domains: list
     if isinstance(perplexity_result, dict) and perplexity_result.get("answer"):
         combined_sources.extend(perplexity_result.get("sources", []))
         context_parts.append(f"=== Deep Research (Perplexity) ===\n{perplexity_result['answer']}")
+        logger.info(f"  ✓ Perplexity: {len(perplexity_result.get('sources', []))} sources")
     
     if isinstance(tavily_result, list):
         for item in tavily_result:
@@ -67,6 +71,7 @@ async def unified_search(query: str, max_results: int = 5, include_domains: list
             for item in tavily_result[:5]
         ])
         context_parts.append(f"=== Additional Context (Tavily) ===\n{snippets}")
+        logger.info(f"  ✓ Tavily: {len(tavily_result)} sources")
     
     return {
         "perplexity": perplexity_result if isinstance(perplexity_result, dict) else None,

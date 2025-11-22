@@ -7,8 +7,13 @@ from ...tools.news_fetcher import (
     fetch_hackernews,
     fetch_google_news_rss,
 )
+from ...logging_config import get_logger
+
+logger = get_logger(__name__)
 
 async def news_fetcher_node(state: TechSnackState) -> TechSnackState:
+    logger.info("📰 Fetching tech news from multiple sources...")
+    
     results = await asyncio.gather(
         fetch_newsapi(
             query="AI OR machine learning OR developer tools",
@@ -25,5 +30,6 @@ async def news_fetcher_node(state: TechSnackState) -> TechSnackState:
             all_news.extend(result)
     
     state.raw_news = all_news
+    logger.info(f"✓ Fetched {len(all_news)} news items")
     return state
 

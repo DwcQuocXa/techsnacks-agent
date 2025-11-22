@@ -6,9 +6,14 @@ from .nodes import (
     researcher_node,
     writer_node,
 )
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
 
 def route_after_input(state: TechSnackState) -> str:
-    return "researcher" if state.mode == "manual" else "news_fetcher"
+    mode = "researcher" if state.mode == "manual" else "news_fetcher"
+    logger.info(f"🚀 Starting TechSnack generation in {state.mode.upper()} mode")
+    return mode
 
 def create_techsnack_graph():
     workflow = StateGraph(TechSnackState)

@@ -1,6 +1,9 @@
 from langchain_perplexity import ChatPerplexity
 from langchain_core.messages import HumanMessage
 from src.techsnack.config import settings
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
 
 async def perplexity_search(query: str) -> dict:
     """
@@ -35,7 +38,7 @@ async def perplexity_search(query: str) -> dict:
         }
     
     except Exception as e:
-        print(f"Perplexity error: {e}")
+        logger.warning(f"Perplexity error: {e}")
         return {
             "answer": "",
             "sources": [],

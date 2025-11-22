@@ -6,13 +6,19 @@ from ...prompts.prompts import get_topic_selector_prompt
 from ...tools.perplexity_search import perplexity_search
 from ...tools.query_builder import build_news_discovery_query
 from ...config import settings
+from ...logging_config import get_logger
+
+logger = get_logger(__name__)
 
 async def topic_selector_node(state: TechSnackState) -> TechSnackState:
     """
     Use Perplexity for news discovery, then LLM for topic selection.
     """
+    logger.info("🔍 Discovering today's trending tech news...")
     news_discovery = await perplexity_search(build_news_discovery_query())
+    logger.info(f"✓ Found {len(news_discovery.get('sources', []))} Perplexity sources")
     
+    logger.info("🎯 Selecting best topic for TechSnack...")
     news_summary = f"=== Today's Trending Tech News (Perplexity) ===\n{news_discovery.get('answer', '')}\n\n"
     news_summary += "=== Headlines from News APIs ===\n"
     news_summary += "\n\n".join([
@@ -41,5 +47,6 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
     except:
         state.selected_topic = response.content.strip()
     
+    logger.info(f"✓ Selected topic: {state.selected_topic}")
     return state
 
