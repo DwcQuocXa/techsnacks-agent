@@ -15,22 +15,25 @@ async def researcher_node(state: TechSnackState) -> TechSnackState:
     
     research_query = build_topic_research_query(topic)
     
-    logger.info("🌐 Searching with Perplexity + Tavily...")
+    logger.info("  → Running Perplexity + Tavily search in parallel...")
     search_results = await unified_search(
         query=research_query,
         max_results=settings.research_depth,
         include_domains=["github.com", "techcrunch.com", "medium.com", "dev.to", "arxiv.org"]
     )
     
-    total_sources = len(search_results.get("combined_sources", []))
-    logger.info(f"✓ Found {total_sources} sources")
+    combined_sources = search_results.get("combined_sources", [])
+    perplexity_sources = len([s for s in combined_sources if s.get("source_engine") == "Perplexity"])
+    tavily_sources = len([s for s in combined_sources if s.get("source_engine") == "Tavily"])
+    
+    logger.info(f"✓ Research complete: {perplexity_sources} Perplexity + {tavily_sources} Tavily = {len(combined_sources)} total sources")
     
     research = ResearchData(
         topic=topic,
-        sources=search_results.get("combined_sources", []),
+        sources=combined_sources,
         key_facts=[
             src.get("snippet", "")[:300] 
-            for src in search_results.get("combined_sources", []) 
+            for src in combined_sources
             if src.get("snippet")
         ][:10],
         technical_details=search_results.get("perplexity", {}).get("answer", ""),

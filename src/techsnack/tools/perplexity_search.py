@@ -31,6 +31,9 @@ async def perplexity_search(query: str) -> dict:
                 for i, citation in enumerate(citations)
             ]
         
+        answer_length = len(response.content) if response.content else 0
+        logger.info(f"  ✓ Perplexity: {len(sources)} citations, {answer_length} chars")
+        
         return {
             "answer": response.content,
             "sources": sources,
@@ -38,7 +41,7 @@ async def perplexity_search(query: str) -> dict:
         }
     
     except Exception as e:
-        logger.warning(f"Perplexity error: {e}")
+        logger.warning(f"  ✗ Perplexity error: {e}")
         return {
             "answer": "",
             "sources": [],

@@ -57,7 +57,6 @@ async def unified_search(query: str, max_results: int = 5, include_domains: list
     if isinstance(perplexity_result, dict) and perplexity_result.get("answer"):
         combined_sources.extend(perplexity_result.get("sources", []))
         context_parts.append(f"=== Deep Research (Perplexity) ===\n{perplexity_result['answer']}")
-        logger.info(f"  ✓ Perplexity: {len(perplexity_result.get('sources', []))} sources")
     
     if isinstance(tavily_result, list):
         for item in tavily_result:
@@ -71,7 +70,6 @@ async def unified_search(query: str, max_results: int = 5, include_domains: list
             for item in tavily_result[:5]
         ])
         context_parts.append(f"=== Additional Context (Tavily) ===\n{snippets}")
-        logger.info(f"  ✓ Tavily: {len(tavily_result)} sources")
     
     return {
         "perplexity": perplexity_result if isinstance(perplexity_result, dict) else None,
