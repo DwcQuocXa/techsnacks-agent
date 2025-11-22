@@ -20,7 +20,7 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
     
     logger.info("🎯 Selecting best topic for TechSnack...")
     news_summary = f"=== Today's Trending Tech News (Perplexity) ===\n{news_discovery.get('answer', '')}\n\n"
-    news_summary += "=== Headlines from News APIs ===\n"
+    news_summary += "=== Headlines from NewsAPI ===\n"
     news_summary += "\n\n".join([
         f"[{i+1}] {item.title}\nSource: {item.source}\nSummary: {item.summary or 'N/A'}"
         for i, item in enumerate(state.raw_news[:20])
