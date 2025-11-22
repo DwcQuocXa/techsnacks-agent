@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     
     gemini_model: str = "gemini-2.0-flash-exp"
     gemini_temperature: float = 0.7
-    perplexity_model: str = "llama-3.1-sonar-small-128k-online"
+    perplexity_model: str = "sonar"
     
     class Config:
         env_file = ".env"
