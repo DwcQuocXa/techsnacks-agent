@@ -3,12 +3,21 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from ..state import TechSnackState
 from ...prompts.prompts import get_topic_selector_prompt
+from ...tools.perplexity_search import perplexity_search
+from ...tools.query_builder import build_news_discovery_query
 from ...config import settings
 
 async def topic_selector_node(state: TechSnackState) -> TechSnackState:
-    news_summary = "\n\n".join([
-        f"[{i+1}] {item.title}\nSource: {item.source}\nURL: {item.url}\nSummary: {item.summary or 'N/A'}"
-        for i, item in enumerate(state.raw_news[:30])
+    """
+    Use Perplexity for news discovery, then LLM for topic selection.
+    """
+    news_discovery = await perplexity_search(build_news_discovery_query())
+    
+    news_summary = f"=== Today's Trending Tech News (Perplexity) ===\n{news_discovery.get('answer', '')}\n\n"
+    news_summary += "=== Headlines from News APIs ===\n"
+    news_summary += "\n\n".join([
+        f"[{i+1}] {item.title}\nSource: {item.source}\nSummary: {item.summary or 'N/A'}"
+        for i, item in enumerate(state.raw_news[:20])
     ])
     
     llm = ChatGoogleGenerativeAI(
@@ -21,7 +30,7 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
     
     response = await llm.ainvoke([
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Today's tech news:\n\n{news_summary}"}
+        {"role": "user", "content": news_summary}
     ])
     
     try:

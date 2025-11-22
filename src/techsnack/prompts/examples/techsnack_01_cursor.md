@@ -1,14 +1,37 @@
-[#TechSnack 01] | Cursor - IDE AI đang gây bão
+# [#TechSnack 01] | Cursor 2.0
 
-Dạo này ae dev có để ý không, Cursor đang được nhắc đến nhiều lắm. Nó là gì mà hot vậy?
+Nhận thấy rằng tech community của anh em mình khá đông nhưng hơi im ắng. Thế nên bọn mình quyết định khởi động một series nho nhỏ tên là **#TechSnack**, nơi chia sẻ nhanh về tin công nghệ, startup thú vị, hay mẩu kiến thức ngắn gọn mà anh em dev nào cũng có thể đọc nhanh trong vài phút. Hy vọng series này sẽ giúp thổi hồn lại cho cộng đồng Viet Tech Finland và làm không khí sôi nổi hơn.
 
-Cursor về cơ bản là VS Code nhưng được "bơm" AI vào sâu trong codebase. Khác với GitHub Copilot chỉ gợi ý code, Cursor cho phép bạn chat với toàn bộ project của mình. Kiểu bạn hỏi "function xử lý payment ở đâu?" là nó chỉ luôn, hoặc "refactor cái này cho clean hơn" là nó làm luôn.
+## Chủ đề hôm nay: Cursor 2.0
 
-Điểm hay là Cursor hiểu context của toàn bộ codebase. Nó không chỉ nhìn file bạn đang mở mà còn biết cách các file liên quan với nhau. Khi bạn cần viết test cho một component, nó sẽ xem qua các test khác trong project để match style.
+Mình đoán là đa phần ae dev đều đã nghe (hoặc đang dùng) Cursor rồi đko? Với mình thì Cursor gần như cánh tay phải trong việc code. Mình hay dùng nó để giải thích code, lập plan, và brainstorming nhanh với AI.... Giờ thì Cursor vừa ra bản 2.0, với kha khá thứ đáng chú ý:
 
-Về giá thì có free tier khá hào phóng (~500 requests/tháng). Pro version $20/tháng không giới hạn. So với thời gian tiết kiệm được thì khá là worth.
+### **Composer 1 Alpha Model**
 
-Nhưng cũng cần cẩn thận: AI suggest mạnh không có nghĩa là mình không cần hiểu code. Vẫn phải review kỹ, đặc biệt với logic phức tạp hay security sensitive code.
+Model AI đầu tiên của Cursor, được train trên hàng tỷ lượt dùng real từ dev như ae. Tốc độ là selling point của con AI này (nhanh hơn Claude 3.5 Sonnet tới 4 lần) - hợp cho các task code ngắn, chạy command hay commit nhanh.
 
-Ae nào đang dùng Cursor rồi thì chia sẻ trải nghiệm nhé! Có thấy productivity tăng không, hay vẫn prefer VS Code thuần?
+→ *Cá nhân mình thấy tốc độ rất quan trọng với mấy việc đơn giản, chứ GPT-5 hay Claude Code đôi khi chậm quá 😄 thà mình làm luôn cho nhanh*
 
+### **Multi-Agent Interface**
+
+Cho phép chạy song song tới 8 agent AI trên cùng codebase, mỗi agent ở một worktree, không ảnh hưởng nhau. Tại sao làm đc thế thì có vẻ họ tạo ra worktree từ ý tưởng từ git branch.
+
+→ *Mình thì không dùng feature này nhiều khi code, nhưng lại dùng khá nhiều khi planning, vì muốn so sánh xem Sonnet 4.5 hay GPT-5 thằng nào plan tốt hơn*
+
+### **Integrated Browser Preview**
+
+Cursor có tích hợp Chrome, cho phép test end-to-end, xem log, inspect DOM,....
+
+→ *Cái này chắc anh em làm FE sẽ cần. Mình bỏ FE tầm nửa năm nay nên chưa có dịp thử.*
+
+---
+
+Ngoài ra còn vài tính năng khác mình chưa trải nghiệm, nên tạm để dành cho các post sau.
+
+## Giờ đến lượt ae:
+
+- Ae dùng Cursor thế nào để tối ưu workflow hoặc tăng productivity?
+- Có trick hay setup nào đáng thử không?
+- Chia sẻ cho mọi người cùng biết nhé
+
+**Happy coding 😄**

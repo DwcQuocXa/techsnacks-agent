@@ -47,6 +47,7 @@ Edit `.env` and add your API keys:
 GEMINI_API_KEY=your_gemini_api_key
 NEWSAPI_KEY=your_newsapi_key
 TAVILY_API_KEY=your_tavily_api_key
+PERPLEXITY_API_KEY=your_perplexity_api_key
 ```
 
 ## Getting API Keys
@@ -54,6 +55,7 @@ TAVILY_API_KEY=your_tavily_api_key
 - **Gemini API**: https://ai.google.dev/ (Free tier available)
 - **NewsAPI**: https://newsapi.org/ (Free tier: 100 requests/day)
 - **Tavily API**: https://tavily.com/ (Free tier: 1000 requests/month)
+- **Perplexity API**: https://www.perplexity.ai/settings/api (Free tier: 5 requests/month, $0.2/1K tokens after)
 
 ## Usage
 
@@ -103,13 +105,14 @@ techsnacks-agent/
 
 ### Auto Mode
 1. Fetches tech news from NewsAPI, HackerNews, Google News
-2. LLM selects best topic based on criteria
-3. Researches topic using Tavily search
-4. Generates Vietnamese article in TechSnack style
+2. **Uses Perplexity to discover today's best tech news with context**
+3. LLM selects best topic based on criteria
+4. **Researches topic using both Perplexity (deep analysis) and Tavily (broad coverage)**
+5. Generates Vietnamese article in TechSnack style
 
 ### Manual Mode
 1. User provides topic
-2. Researches topic using Tavily search
+2. **Researches topic using both Perplexity and Tavily**
 3. Generates Vietnamese article in TechSnack style
 
 ## Configuration

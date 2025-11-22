@@ -54,7 +54,7 @@ def test_environment():
     
     load_dotenv()
     
-    required_keys = ["GEMINI_API_KEY", "NEWSAPI_KEY", "TAVILY_API_KEY"]
+    required_keys = ["GEMINI_API_KEY", "NEWSAPI_KEY", "TAVILY_API_KEY", "PERPLEXITY_API_KEY"]
     missing = [k for k in required_keys if not os.getenv(k)]
     
     if missing:
