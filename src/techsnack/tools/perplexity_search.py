@@ -11,14 +11,17 @@ async def perplexity_search(query: str) -> dict:
     """
     chat = ChatPerplexity(
         model=settings.perplexity_model,
-        temperature=0.3,
+        temperature=0.7,
         api_key=settings.perplexity_api_key,
     )
     
     try:
-        query_preview = query[:200] + "..." if len(query) > 200 else query
+        # Log warning if query is suspiciously short
+        if len(query) < 10:
+            logger.warning(f"  ⚠️ Suspiciously short query ({len(query)} chars): '{query}'")
+
         logger.info(f"  📤 Perplexity payload: model={settings.perplexity_model}, query_length={len(query)}")
-        logger.debug(f"  📤 Perplexity query: {query_preview}")
+        logger.info("  📤 Perplexity query:\n%s", query)
         
         response = await chat.ainvoke([HumanMessage(content=query)])
         
@@ -37,6 +40,12 @@ async def perplexity_search(query: str) -> dict:
         
         answer_length = len(response.content) if response.content else 0
         logger.info(f"  ✓ Perplexity: {len(sources)} citations, {answer_length} chars")
+        if sources:
+            logger.info(
+                "    ↳ Citations: %s",
+                ", ".join(src.get("url", "") for src in sources[:5]),
+            )
+        logger.info("  🧠 Perplexity answer:\n%s", response.content)
         
         return {
             "answer": response.content,

@@ -13,6 +13,13 @@ setup_logging()
 st.set_page_config(page_title="TechSnack AI Generator", page_icon="📰")
 st.title("🇻🇳 TechSnack AI Generator")
 
+st.sidebar.header("⚙️ Settings")
+writer_model = st.sidebar.selectbox(
+    "Writer Model",
+    ["gpt-5", "gemini-2.5-flash-preview-09-2025", "gemini-3-pro-preview"],
+    index=0
+)
+
 @st.cache_resource
 def get_graph():
     return create_techsnack_graph()
@@ -25,7 +32,7 @@ with tab1:
     st.subheader("Auto-Generate Today's TechSnack")
     if st.button("Generate Today's TechSnack", type="primary"):
         with st.spinner("Working..."):
-            initial_state = TechSnackState(mode="auto", started_at=datetime.now())
+            initial_state = TechSnackState(mode="auto", writer_model=writer_model, started_at=datetime.now())
             result = asyncio.run(graph.ainvoke(initial_state))
             
             st.success("✅ Article Generated!")
@@ -48,10 +55,21 @@ with tab1:
 with tab2:
     st.subheader("Generate from Custom Topic")
     topic_input = st.text_area("Enter topic:", height=100)
+    user_instructions = st.text_area(
+        "Additional instructions (optional):",
+        placeholder="e.g., Focus on practical examples, compare with alternatives, emphasize security aspects...",
+        height=80
+    )
     
     if st.button("Research & Generate", type="primary", disabled=not topic_input):
         with st.spinner(f"Researching..."):
-            initial_state = TechSnackState(mode="manual", user_topic=topic_input, started_at=datetime.now())
+            initial_state = TechSnackState(
+                mode="manual", 
+                user_topic=topic_input, 
+                user_query=user_instructions if user_instructions else None,
+                writer_model=writer_model, 
+                started_at=datetime.now()
+            )
             result = asyncio.run(graph.ainvoke(initial_state))
             
             st.success("✅ Article Generated!")

@@ -83,6 +83,9 @@ fi
 if [ -z "$PERPLEXITY_API_KEY" ]; then
     missing_keys+=("PERPLEXITY_API_KEY")
 fi
+if [ -z "$OPENAI_API_KEY" ]; then
+    missing_keys+=("OPENAI_API_KEY")
+fi
 
 if [ ${#missing_keys[@]} -gt 0 ]; then
     echo -e "${RED}❌ Missing API keys: ${missing_keys[*]}${NC}"

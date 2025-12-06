@@ -1,13 +1,13 @@
 # TechSnack AI Content Generator
 
-Automated Vietnamese tech content generator using LangGraph, powered by Gemini 2.0.
+Automated Vietnamese tech content generator using LangGraph, powered by Gemini and GPT.
 
 ## Overview
 
 TechSnack AI automatically generates casual, engaging tech articles in Vietnamese for the Viet Tech Community in Finland. It features two modes:
 
-- **Auto mode**: Fetches latest tech news → selects best topic → researches → writes article
-- **Manual mode**: Takes user topic → researches → writes article
+- **Auto mode**: NewsAPI + Perplexity discovery → GPT topic selection → planner → research → article writing
+- **Manual mode**: User topic + optional instructions → planner → research → article writing
 
 ## Quick Start
 
@@ -61,6 +61,7 @@ If you prefer to set things up manually:
   - NewsAPI key
   - Tavily API key
   - Perplexity API key
+  - OpenAI API key
 
 ## Getting API Keys
 
@@ -68,47 +69,59 @@ If you prefer to set things up manually:
 - **NewsAPI**: https://newsapi.org/ (Free tier: 100 requests/day)
 - **Tavily API**: https://tavily.com/ (Free tier: 1000 requests/month)
 - **Perplexity API**: https://www.perplexity.ai/settings/api (Free tier: 5 requests/month, $0.2/1K tokens after)
+- **OpenAI API**: https://platform.openai.com/
 
 ## Project Structure
 
 ```
 techsnacks-agent/
-├── start.sh               # 🆕 One-command start script
+├── start.sh               # One-command start script
 ├── app.py                 # Streamlit UI entry point
 ├── src/techsnack/
-│   ├── config.py         # Settings management
-│   ├── models.py         # Data models
+│   ├── config.py          # Settings management
+│   ├── models.py          # Data models
+│   ├── logging_config.py  # Logging setup
 │   ├── graph/
-│   │   ├── state.py      # LangGraph state
-│   │   ├── graph.py      # Workflow definition
-│   │   └── nodes/        # Individual workflow nodes
+│   │   ├── state.py       # LangGraph state
+│   │   ├── graph.py       # Workflow definition
+│   │   └── nodes/         # Individual workflow nodes
 │   ├── tools/
-│   │   ├── news_fetcher.py    # News APIs
-│   │   ├── web_search.py      # Tavily search
+│   │   ├── news_fetcher.py       # News APIs
+│   │   ├── web_search.py         # Tavily search
 │   │   ├── perplexity_search.py  # Perplexity integration
-│   │   └── query_builder.py   # Smart queries
+│   │   └── query_builder.py      # Smart queries
 │   └── prompts/
-│       ├── prompts.py         # Prompt loader
-│       ├── topic_selector.md  # Topic selection prompt
-│       ├── writer.md          # Writer prompt
-│       └── examples/          # Example articles
-├── tests/                # Test scripts
-└── outputs/             # Generated articles
+│       ├── prompts.py            # Prompt loader
+│       ├── topic_selector.md     # Topic selection prompt
+│       ├── writer.md             # Writer prompt
+│       └── examples/             # Example articles
+├── tests/                 # Test scripts
+└── outputs/               # Generated articles
 ```
 
 ## How It Works
 
 ### Auto Mode
-1. Fetches tech news from NewsAPI, HackerNews, Google News
-2. **Uses Perplexity to discover today's best tech news with context**
-3. LLM selects best topic based on criteria
-4. **Researches topic using both Perplexity (deep analysis) and Tavily (broad coverage)**
-5. Generates Vietnamese article in TechSnack style
+1. Fetches tech news via NewsAPI
+2. Uses Perplexity to rank and summarize the most interesting topics
+3. GPT selects the single best topic for engineers
+4. Planner node creates short search queries
+5. Researcher node runs those queries through Perplexity + Tavily
+6. Writer produces the final Vietnamese TechSnack article
 
 ### Manual Mode
-1. User provides topic
-2. **Researches topic using both Perplexity and Tavily**
-3. Generates Vietnamese article in TechSnack style
+1. User provides topic and optional instructions from the UI
+2. Planner node generates targeted search queries
+3. Researcher node aggregates findings via Perplexity + Tavily
+4. Writer composes the article following TechSnack style
+
+### Model Selection
+Users can choose the writer model from the sidebar:
+- `gpt-5` (default)
+- `gemini-2.5-flash-preview-09-2025`
+- `gemini-3-pro-preview`
+
+The selected model is used for both the planner and writer nodes.
 
 ## Configuration
 
@@ -119,11 +132,14 @@ GEMINI_API_KEY=your_gemini_api_key
 NEWSAPI_KEY=your_newsapi_key
 TAVILY_API_KEY=your_tavily_api_key
 PERPLEXITY_API_KEY=your_perplexity_api_key
+OPENAI_API_KEY=your_openai_api_key
 ```
 
 Optional settings:
 - `GEMINI_MODEL`: Model name (default: "gemini-2.0-flash-exp")
 - `GEMINI_TEMPERATURE`: Temperature 0-1 (default: 0.7)
+- `OPENAI_MODEL`: GPT model for topic selection (default: "gpt-5")
+- `RESEARCH_CONCURRENCY`: Max parallel planner queries (default: 3)
 - `MAX_NEWS_ITEMS`: Max news to fetch (default: 30)
 - `RESEARCH_DEPTH`: Max search results (default: 5)
 - `OUTPUT_DIR`: Output directory (default: "outputs")
@@ -142,14 +158,17 @@ python tests/test_tools.py
 # Test Perplexity integration
 python tests/test_perplexity.py
 
-# Test complete workflow
+# Mocked unit tests for critical nodes
+python tests/test_nodes.py
+
+# Mocked graph wiring tests
 python tests/test_graph.py
 ```
 
 ## Troubleshooting
 
 ### Missing API Keys Error
-Make sure `.env` file exists with all four API keys set.
+Make sure `.env` file exists with all five API keys set.
 
 ### Import Errors
 Reinstall dependencies: `pip install -e .`

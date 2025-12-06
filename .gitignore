@@ -1,4 +1,5 @@
 .env
+env_export.sh
 __pycache__/
 *.pyc
 .venv/
