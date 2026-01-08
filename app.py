@@ -16,7 +16,7 @@ st.title("🇻🇳 TechSnack AI Generator")
 st.sidebar.header("⚙️ Settings")
 writer_model = st.sidebar.selectbox(
     "Writer Model",
-    ["gpt-5", "gemini-2.5-flash-preview-09-2025", "gemini-3-pro-preview"],
+    ["gemini-3-flash-preview", "gpt-5", "gemini-3-pro-preview"],
     index=0
 )
 

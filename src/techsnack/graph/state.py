@@ -15,7 +15,7 @@ class TechSnackState(BaseModel):
     mode: str
     user_topic: str | None = None
     user_query: str | None = None
-    writer_model: str = "gpt-5"
+    writer_model: str = "gemini-3-flash-preview"
     raw_news: list = []
     today_topics: list[dict[str, Any]] = Field(default_factory=list)
     selected_topic: str | None = None

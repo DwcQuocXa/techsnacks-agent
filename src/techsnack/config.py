@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     research_depth: int = 5
     research_concurrency: int = 3
     
-    gemini_model: str = "gemini-2.0-flash-exp"
+    gemini_model: str = "gemini-3-flash-preview"
     gemini_temperature: float = 0.7
     perplexity_model: str = "sonar"
     openai_model: str = "gpt-5"
