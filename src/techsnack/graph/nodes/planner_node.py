@@ -1,6 +1,5 @@
 import json
-from langchain_openai import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI  # type: ignore[import-untyped]
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from ..state import TechSnackState
 from ...config import settings
@@ -17,21 +16,13 @@ async def planner_node(state: TechSnackState) -> TechSnackState:
         state.plan_search_queries = []
         return state
     
-    if state.writer_model.startswith("gemini"):
-        llm = ChatGoogleGenerativeAI(
-            model=state.writer_model,
-            temperature=0.4,
-            max_output_tokens=600,
-            google_api_key=settings.gemini_api_key,
-        )
-        logger.info(f"🧠 Planning research with {state.writer_model}")
-    else:
-        llm = ChatOpenAI(
-            model=state.writer_model,
-            api_key=settings.openai_api_key,
-            temperature=0.4,
-        )
-        logger.info(f"🧠 Planning research with {state.writer_model}")
+    llm = ChatGoogleGenerativeAI(
+        model=state.writer_model,
+        temperature=0.4,
+        max_output_tokens=1500,
+        google_api_key=settings.gemini_api_key,
+    )
+    logger.info(f"🧠 Planning research with {state.writer_model}")
     
     system_prompt, user_prompt = await get_planner_prompts(topic)
     
@@ -43,7 +34,8 @@ async def planner_node(state: TechSnackState) -> TechSnackState:
     
     content = response.content
     if isinstance(content, list):
-        content = " ".join(str(part) for part in content)
+        parts = [p["text"] if isinstance(p, dict) and "text" in p else str(p) for p in content]
+        content = "".join(parts)
     
     plan_topic, search_queries = _parse_plan_response(content, fallback_topic=topic)
     state.plan_topic = plan_topic

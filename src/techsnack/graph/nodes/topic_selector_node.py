@@ -1,5 +1,4 @@
 import json
-from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from ..state import TechSnackState
@@ -18,20 +17,12 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
         state.selection_reasoning = None
         return state
 
-    if state.writer_model.startswith("gemini"):
-        llm = ChatGoogleGenerativeAI(
-            model=state.writer_model,
-            google_api_key=settings.gemini_api_key,
-            temperature=0.6,
-        )
-        logger.info(f"🎯 Selecting best topic with {state.writer_model}")
-    else:
-        llm = ChatOpenAI(
-            model=state.writer_model,
-            api_key=settings.openai_api_key,
-            temperature=0.6,
-        )
-        logger.info(f"🎯 Selecting best topic with {state.writer_model}")
+    llm = ChatGoogleGenerativeAI(
+        model=state.writer_model,
+        google_api_key=settings.gemini_api_key,
+        temperature=0.6,
+    )
+    logger.info(f"🎯 Selecting best topic with {state.writer_model}")
 
     system_prompt = "You are the expert tech content curator for TechSnack, a daily tech digest for Vietnamese software engineers, tech leaders, and AI startup founders in Finland."
     user_prompt = await get_topic_selector_prompt()
@@ -47,7 +38,8 @@ async def topic_selector_node(state: TechSnackState) -> TechSnackState:
 
     content = response.content
     if isinstance(content, list):
-        content = " ".join(str(part) for part in content)
+        parts = [p["text"] if isinstance(p, dict) and "text" in p else str(p) for p in content]
+        content = "".join(parts)
     
     selected_topic, reasoning = _parse_topic_response(content)
     state.selected_topic = selected_topic
