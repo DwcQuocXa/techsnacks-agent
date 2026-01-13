@@ -1,6 +1,7 @@
 import streamlit as st
 import asyncio
-from datetime import datetime
+import json
+from datetime import datetime, date
 from pathlib import Path
 
 from src.techsnack.graph.graph import create_techsnack_graph
@@ -9,6 +10,33 @@ from src.techsnack.config import settings
 from src.techsnack.logging_config import setup_logging
 
 setup_logging()
+
+DAILY_LIMIT = 10
+RATE_LIMIT_FILE = Path(".rate_limit.json")
+
+def get_daily_usage() -> tuple[int, int]:
+    """Returns (used_today, remaining)."""
+    today = date.today().isoformat()
+    if RATE_LIMIT_FILE.exists():
+        data = json.loads(RATE_LIMIT_FILE.read_text())
+        if data.get("date") == today:
+            used = data.get("count", 0)
+            return used, max(0, DAILY_LIMIT - used)
+    return 0, DAILY_LIMIT
+
+def increment_usage() -> bool:
+    """Increment usage count. Returns True if within limit."""
+    today = date.today().isoformat()
+    used, remaining = get_daily_usage()
+    if remaining <= 0:
+        return False
+    RATE_LIMIT_FILE.write_text(json.dumps({"date": today, "count": used + 1}))
+    return True
+
+def can_generate() -> bool:
+    """Check if we can generate (within rate limit)."""
+    _, remaining = get_daily_usage()
+    return remaining > 0
 
 st.set_page_config(page_title="TechSnack AI Generator", page_icon="📰", layout="wide")
 st.title("🇻🇳 TechSnack AI Generator")
@@ -19,6 +47,12 @@ writer_model = st.sidebar.selectbox(
     ["gemini-3-flash-preview", "gemini-3-pro-preview"],
     index=0
 )
+
+used, remaining = get_daily_usage()
+st.sidebar.divider()
+st.sidebar.metric("Daily Usage", f"{used}/{DAILY_LIMIT}", delta=f"{remaining} remaining")
+if remaining == 0:
+    st.sidebar.error("⚠️ Daily limit reached")
 
 def get_field(result, field):
     return result.get(field) if isinstance(result, dict) else getattr(result, field, None)
@@ -106,32 +140,35 @@ tab1, tab2 = st.tabs(["🤖 Auto Generate", "✏️ Manual Topic"])
 
 with tab1:
     st.subheader("Auto-Generate Today's TechSnack")
-    if st.button("Generate Today's TechSnack", type="primary"):
-        with st.spinner("🔍 Fetching news and generating article..."):
-            initial_state = TechSnackState(mode="auto", writer_model=writer_model, started_at=datetime.now())
-            result = asyncio.run(graph.ainvoke(initial_state))
-        
-        article = get_field(result, "article")
-        selected_topic = get_field(result, "selected_topic")
-        
-        if article:
-            st.success(f"✅ Generated: **{selected_topic}**")
-            
-            show_pipeline_details(result)
-            
-            st.divider()
-            st.subheader("📝 Generated Article")
-            st.markdown(article)
-            st.divider()
-            
-            filename = f"techsnack_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-            output_dir = Path(settings.output_dir)
-            output_dir.mkdir(exist_ok=True)
-            (output_dir / filename).write_text(article)
-            
-            st.download_button("⬇️ Download Markdown", article, filename, mime="text/markdown")
+    if st.button("Generate Today's TechSnack", type="primary", disabled=not can_generate()):
+        if not increment_usage():
+            st.error("⚠️ Daily limit reached. Try again tomorrow.")
         else:
-            st.error("Failed to generate article. Please try again.")
+            with st.spinner("🔍 Fetching news and generating article..."):
+                initial_state = TechSnackState(mode="auto", writer_model=writer_model, started_at=datetime.now())
+                result = asyncio.run(graph.ainvoke(initial_state))
+            
+            article = get_field(result, "article")
+            selected_topic = get_field(result, "selected_topic")
+            
+            if article:
+                st.success(f"✅ Generated: **{selected_topic}**")
+                
+                show_pipeline_details(result)
+                
+                st.divider()
+                st.subheader("📝 Generated Article")
+                st.markdown(article)
+                st.divider()
+                
+                filename = f"techsnack_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+                output_dir = Path(settings.output_dir)
+                output_dir.mkdir(exist_ok=True)
+                (output_dir / filename).write_text(article)
+                
+                st.download_button("⬇️ Download Markdown", article, filename, mime="text/markdown")
+            else:
+                st.error("Failed to generate article. Please try again.")
 
 with tab2:
     st.subheader("Generate from Custom Topic")
@@ -142,35 +179,38 @@ with tab2:
         height=80
     )
     
-    if st.button("Research & Generate", type="primary", disabled=not topic_input):
-        with st.spinner("🔍 Researching and generating article..."):
-            initial_state = TechSnackState(
-                mode="manual", 
-                user_topic=topic_input, 
-                user_query=user_instructions if user_instructions else None,
-                writer_model=writer_model, 
-                started_at=datetime.now()
-            )
-            result = asyncio.run(graph.ainvoke(initial_state))
-        
-        article = get_field(result, "article")
-        
-        if article:
-            st.success(f"✅ Generated: **{topic_input}**")
-            
-            show_pipeline_details(result)
-            
-            st.divider()
-            st.subheader("📝 Generated Article")
-            st.markdown(article)
-            st.divider()
-            
-            filename = f"techsnack_custom_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-            output_dir = Path(settings.output_dir)
-            output_dir.mkdir(exist_ok=True)
-            (output_dir / filename).write_text(article)
-            
-            st.download_button("⬇️ Download Markdown", article, filename, mime="text/markdown")
+    if st.button("Research & Generate", type="primary", disabled=not topic_input or not can_generate()):
+        if not increment_usage():
+            st.error("⚠️ Daily limit reached. Try again tomorrow.")
         else:
-            st.error("Failed to generate article. Please try again.")
+            with st.spinner("🔍 Researching and generating article..."):
+                initial_state = TechSnackState(
+                    mode="manual", 
+                    user_topic=topic_input, 
+                    user_query=user_instructions if user_instructions else None,
+                    writer_model=writer_model, 
+                    started_at=datetime.now()
+                )
+                result = asyncio.run(graph.ainvoke(initial_state))
+            
+            article = get_field(result, "article")
+            
+            if article:
+                st.success(f"✅ Generated: **{topic_input}**")
+                
+                show_pipeline_details(result)
+                
+                st.divider()
+                st.subheader("📝 Generated Article")
+                st.markdown(article)
+                st.divider()
+                
+                filename = f"techsnack_custom_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+                output_dir = Path(settings.output_dir)
+                output_dir.mkdir(exist_ok=True)
+                (output_dir / filename).write_text(article)
+                
+                st.download_button("⬇️ Download Markdown", article, filename, mime="text/markdown")
+            else:
+                st.error("Failed to generate article. Please try again.")
 

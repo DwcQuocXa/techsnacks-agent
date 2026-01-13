@@ -8,4 +8,5 @@ outputs/
 .ruff_cache/
 *.egg-info/
 .DS_Store
+.rate_limit.json
 
