@@ -8,6 +8,11 @@ from ..logging_config import get_logger
 logger = get_logger(__name__)
 
 async def tavily_search(query: str, max_results: int = 10, include_domains: list[str] = None):
+    # Skip if Tavily key is not configured
+    if not settings.tavily_api_key:
+        logger.warning("  ⚠️ TAVILY_API_KEY not configured, skipping Tavily search")
+        return []
+    
     client = TavilyClient(api_key=settings.tavily_api_key)
 
     try:

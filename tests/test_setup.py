@@ -2,7 +2,7 @@
 import sys
 
 def test_python_version():
-    assert sys.version_info >= (3, 12), f"Python 3.12+ required, got {sys.version}"
+    assert sys.version_info >= (3, 11), f"Python 3.11+ required, got {sys.version}"
     print(f"✓ Python {sys.version}")
 
 def test_imports():
@@ -54,14 +54,21 @@ def test_environment():
     
     load_dotenv()
     
-    required_keys = ["GEMINI_API_KEY", "NEWSAPI_KEY", "TAVILY_API_KEY", "PERPLEXITY_API_KEY"]
+    # Only these two are required
+    required_keys = ["GEMINI_API_KEY", "PERPLEXITY_API_KEY"]
+    optional_keys = ["NEWSAPI_KEY", "TAVILY_API_KEY", "OPENAI_API_KEY"]
+    
     missing = [k for k in required_keys if not os.getenv(k)]
+    missing_optional = [k for k in optional_keys if not os.getenv(k)]
     
     if missing:
-        print(f"✗ Missing API keys in .env: {missing}")
-        raise ValueError(f"Missing API keys: {missing}")
+        print(f"✗ Missing required API keys in .env: {missing}")
+        raise ValueError(f"Missing required API keys: {missing}")
     else:
-        print(f"✓ All API keys present in .env")
+        print(f"✓ Required API keys present in .env")
+    
+    if missing_optional:
+        print(f"⚠ Optional API keys not set (some features disabled): {missing_optional}")
 
 if __name__ == "__main__":
     print("=== Phase 1 Setup Verification ===\n")

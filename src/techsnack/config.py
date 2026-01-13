@@ -1,11 +1,14 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
+    # Required API keys
     gemini_api_key: str
-    newsapi_key: str
-    tavily_api_key: str
     perplexity_api_key: str
-    openai_api_key: str
+    
+    # Optional API keys (features will be disabled if not provided)
+    newsapi_key: str | None = None
+    tavily_api_key: str | None = None
+    openai_api_key: str | None = None
     
     output_dir: str = "outputs"
     max_news_items: int = 30

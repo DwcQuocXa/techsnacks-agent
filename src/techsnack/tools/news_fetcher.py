@@ -7,6 +7,11 @@ from src.techsnack.config import settings
 logger = logging.getLogger(__name__)
 
 async def fetch_newsapi(query: str, from_date: datetime) -> list[NewsItem]:
+    # Skip if NewsAPI key is not configured
+    if not settings.newsapi_key:
+        logger.warning("  ⚠️ NEWSAPI_KEY not configured, skipping NewsAPI fetch")
+        return []
+    
     url = "https://newsapi.org/v2/everything"
     params = {
         "q": query,
