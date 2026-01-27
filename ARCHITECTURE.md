@@ -19,6 +19,23 @@ This document captures the latest planner-first design for TechSnack AI.
 3. Researcher aggregates facts based on the queries.
 4. Writer produces the article.
 
+#### Manual Mode Flow
+
+```
+📝 Topic + Instructions → 🧠 Planner (Gemini) → 🔍 Researcher (Perplexity) → ✍️ Writer (Gemini) → 📄 Article
+```
+
+#### API Calls Summary (Manual Mode)
+
+| Step | API | Calls | Purpose |
+|------|-----|-------|---------|
+| Planner | Gemini | 1 | Generate search queries |
+| Researcher | Perplexity | N (per query) | Deep research |
+| Researcher | Tavily | N (per query) | Quick lookup (if configured) |
+| Writer | Gemini | 1 | Generate article |
+
+**Total**: ~2 + N Perplexity calls (where N = number of search queries, typically 3-5)
+
 Both modes share the same planner → researcher → writer chain. The Planner and Writer use the same configurable model (`writer_model`).
 
 ---
